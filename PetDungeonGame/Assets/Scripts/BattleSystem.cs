@@ -23,10 +23,10 @@ public class BattleSystem : MonoBehaviour
     void Start()
     {
         state = TurnState.Start;
-        SetupBattle();
+        StartCoroutine(SetupBattle());
     }
 
-    void SetupBattle()
+    IEnumerator SetupBattle()
     {
         GameObject playerGO = Instantiate(PetPrefab, PetPosition);
         battleui = playerGO.GetComponent<BattleHUD>();
@@ -36,20 +36,21 @@ public class BattleSystem : MonoBehaviour
         enemyUnit = enemyGO.GetComponent<Unit>();
 
         state = TurnState.PlayerTurn;
+        yield  return new WaitForSeconds(1f);
     }
 
     IEnumerator EnemyTurn()
     {
         yield return new WaitForSeconds(1f);
         
-        bool isDead = playerUnit.TakeDamage(enemyUnit.damage);
+        bool isDead = playerUnit.TakeDamage(enemyUnit.Damage);
 
         battleui.SetHP(enemyUnit.currentHP);
     }
 
     IEnumerator PlayerAttack()
     {
-        bool isDead = enemyUnit.TakeDamage(playerUnit.damage);
+        bool isDead = enemyUnit.TakeDamage(playerUnit.Damage);
 
         battleui.SetHP(enemyUnit.currentHP);
 
