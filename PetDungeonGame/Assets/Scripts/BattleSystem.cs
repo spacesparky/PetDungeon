@@ -18,6 +18,8 @@ public class BattleSystem : MonoBehaviour
     Unit playerUnit;
     Unit enemyUnit;
 
+    BattleHUD battleui;
+
     void Start()
     {
         state = TurnState.Start;
@@ -27,6 +29,7 @@ public class BattleSystem : MonoBehaviour
     void SetupBattle()
     {
         GameObject playerGO = Instantiate(PetPrefab, PetPosition);
+        battleui = playerGO.GetComponent<BattleHUD>();
         playerUnit = playerGO.GetComponent<Unit>();
 
         GameObject enemyGO = Instantiate(EnemyPrefab, EnemyPosition);
@@ -35,8 +38,54 @@ public class BattleSystem : MonoBehaviour
         state = TurnState.PlayerTurn;
     }
 
-    void onAttackButton()
+    IEnumerator EnemyTurn()
     {
+        yield return new WaitForSeconds(1f);
         
+        bool isDead = playerUnit.TakeDamage(enemyUnit.damage);
+
+        battleui.SetHP(enemyUnit.currentHP);
+    }
+
+    IEnumerator PlayerAttack()
+    {
+        bool isDead = enemyUnit.TakeDamage(playerUnit.damage);
+
+        battleui.SetHP(enemyUnit.currentHP);
+
+        yield return new WaitForSeconds(2f);
+
+        if (isDead)
+        {
+             state = TurnState.Won;
+             endBattle();
+        } else
+        {
+            state = TurnState.EnemyTurn;
+            StartCoroutine(EnemyTurn());
+        }
+    }
+
+    void endBattle()
+    {
+        if (state == TurnState.Won)
+        {
+            Debug.Log("win");
+        } else if (state == TurnState.Lost)
+        {
+            Debug.Log("lost");
+        }
+    }
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) )
+        {
+            if (state == TurnState.PlayerTurn)
+            {
+                StartCoroutine(PlayerAttack());
+            }
+        } 
     }
 }
